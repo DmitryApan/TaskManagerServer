@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>video</title>
+</head>
+<body>
+    <div id="root">
+        hey there
+    </div>
+    <video id="gum-local" autoplay playsinline></video>
+    <script>
+        const socket = new WebSocket("ws://localhost:2021/");
+        const constraints = {audio: true, video: true};
+        const configuration = {
+            iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
+        };
+        const pc = new RTCPeerConnection(configuration);
+        pc.onicecandidate = ({ candidate }) => {
+            const payload = JSON.stringify({ candidate });
+            socket.send(payload);
+        };
+
+        pc.onnegotiationneeded = async () => {
+            try {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                const payload = JSON.stringify({ desc: pc.localDescription });
+                socket.send(payload);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        pc.ontrack = e => {
+            const remoteView = document.querySelector('video');
+
+            if (!remoteView.srcObject) {
+                remoteView.srcObject = e.streams[0];
+            }
+        };
+
+        const init = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
+                stream.getTracks().forEach(track => {
+                    pc.addTrack(track, stream);
+                });
+                // const video = document.querySelector('video');
+                // video.srcObject = stream;
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        socket.onopen = () => {
+            // socket.send('first');
+            // init();
+        };
+
+        socket.onmessage = async (msg) => {
+            const { candidate, desc, go } = JSON.parse(msg.data);
+
+            if (go) {
+                init();
+            }
+
+            try {
+                if (desc) {
+                    if (desc.type === 'offer') {
+                        const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
+
+                        await pc.setRemoteDescription(desc);
+                        stream.getTracks().forEach(track => {
+                            pc.addTrack(track, stream);
+                        });
+
+                        const answer = await pc.createAnswer();
+                        await pc.setLocalDescription(answer);
+
+                        const payload = JSON.stringify({ desc: pc.localDescription });
+                        socket.send(payload);
+                    } else if (desc.type === 'answer') {
+                        await pc.setRemoteDescription(desc);
+                    } else {
+                        console.log('UNSUPPORTED');
+                    }
+                } else if (candidate) {
+                    await pc.addIceCandidate(candidate);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+    </script>
+</body>
+</html>
