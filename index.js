@@ -5,6 +5,7 @@ const cors = require('cors');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const PORT = process.env.PORT || 8888;
 
 const app = new express();
 
@@ -187,6 +188,6 @@ app.get('/settings', (request, response) => {
     response.json(['Open', 'In Progress', 'Closed']);
 });
 
-app.listen(8888, function () {
-
+app.listen(PORT, function () {
+    console.log(`Listening on ${PORT}`);
 });
