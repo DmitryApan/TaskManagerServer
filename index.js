@@ -135,10 +135,10 @@ app.get('/cards', (request, response) => {
 });
 
 app.post('/card', (request, response) => {
-    const { title } = request.body;
+    const { title, description } = request.body;
 
     if (title) {
-        const card = new Card({ title, status: 'Open' });
+        const card = new Card({ description, title, status: 'Open' });
 
         card.save((err, entity) => {
             if (err) {
