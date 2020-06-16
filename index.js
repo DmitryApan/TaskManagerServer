@@ -92,7 +92,7 @@ mongoose.set('useFindAndModify', false);
 
 const connectionUri = 'mongodb+srv://admin:admin@cluster0-tjm8e.mongodb.net/test?retryWrites=true&w=majority';
 
-// mongoose.connect(connectionUri, {useNewUrlParser: true});
+mongoose.connect(connectionUri, {useNewUrlParser: true});
 
 app.get('/', function(request, response){
     response.sendFile(path.join(__dirname, 'index.html'));
