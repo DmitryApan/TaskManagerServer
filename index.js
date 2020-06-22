@@ -184,6 +184,34 @@ app.delete('/card/:id', (request, response) => {
     }
 });
 
+app.get('/users', (request, response) => {
+    User.find((err, users) => {
+        if (err) {
+            response.json(err);
+        } else {
+            response.json(users);
+        }
+    });
+});
+
+app.put('/user', (request, response) => {
+    const { email } = request.body;
+
+    if (email) {
+        const payload = { email };
+
+        Card.findOneAndUpdate(payload, request.body, (err, entity) => {
+            if (err) {
+                response.json(err);
+            } else {
+                response.json(entity);
+            }
+        });
+    } else {
+        response.json({err: 'where is email, dude?'});
+    }
+});
+
 app.get('/settings', (request, response) => {
     response.json(['Open', 'In Progress', 'Closed']);
 });
