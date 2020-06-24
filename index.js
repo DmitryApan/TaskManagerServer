@@ -94,8 +94,10 @@ const connectionUri = 'mongodb+srv://admin:admin@cluster0-tjm8e.mongodb.net/test
 
 mongoose.connect(connectionUri, {useNewUrlParser: true});
 
+app.use(express.static(__dirname + '/build'));
+
 app.get('/', function(request, response){
-    response.sendFile(path.join(__dirname, 'index.html'));
+    response.sendFile(path.join(__dirname, 'build/index.html'));
 });
 
 app.post('/register', (request, response) => {
