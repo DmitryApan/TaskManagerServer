@@ -202,7 +202,7 @@ app.put('/user', (request, response) => {
     if (email) {
         const payload = { email };
 
-        Card.findOneAndUpdate(payload, request.body, (err, entity) => {
+        User.findOneAndUpdate(payload, request.body, {new: true}, (err, entity) => {
             if (err) {
                 response.json(err);
             } else {
