@@ -13,6 +13,7 @@ const cardSchema = new mongoose.Schema({
     description: String,
     status: String,
     title: String,
+    owners: Array,
 });
 
 const Card = mongoose.model('Card', cardSchema);
@@ -137,10 +138,10 @@ app.get('/cards', (request, response) => {
 });
 
 app.post('/card', (request, response) => {
-    const { title, description } = request.body;
+    const { title, description, status } = request.body;
 
     if (title) {
-        const card = new Card({ description, title, status: 'Open' });
+        const card = new Card({ description, title, status: status || 'Open', owners: [] });
 
         card.save((err, entity) => {
             if (err) {
