@@ -14,6 +14,7 @@ const cardSchema = new mongoose.Schema({
     status: String,
     title: String,
     owners: Array,
+    children: Array,
 });
 
 const Card = mongoose.model('Card', cardSchema);
