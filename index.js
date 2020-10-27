@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+const settingsSchema = new mongoose.Schema({ statuses: Array });
+
+const Settings = mongoose.model('Settings', settingsSchema);
+
 app.use(cors());
 app.use(express.json());
 
@@ -160,7 +164,7 @@ app.put('/card/:id', (request, response) => {
     const { id } = request.params;
 
     if (id) {
-        Card.findByIdAndUpdate(id, request.body, (err, entity) => {
+        Card.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
             if (err) {
                 response.json(err);
             } else {
@@ -217,7 +221,29 @@ app.put('/user', (request, response) => {
 });
 
 app.get('/settings', (request, response) => {
-    response.json(['Open', 'In Progress', 'Closed']);
+    Settings.find((err, settings) => {
+        if (err) {
+            response.json(err);
+        } else {
+            response.json(settings[0]);
+        }
+    });
+});
+
+app.put('/settings/:id', (request, response) => {
+    const { id } = request.params;
+
+    if (id) {
+        Settings.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
+            if (err) {
+                response.json(err);
+            } else {
+                response.json(entity);
+            }
+        });
+    } else {
+        response.json({err: 'where is id, dude?'});
+    }
 });
 
 app.listen(PORT, function () {
