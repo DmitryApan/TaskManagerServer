@@ -5,9 +5,15 @@ const cors = require('cors');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const WebSocket = require('ws');
+
 const PORT = process.env.PORT || 8888;
 
 const app = new express();
+
+const wss = new WebSocket.Server({
+    port: 8080,
+});
 
 const cardSchema = new mongoose.Schema({
     description: String,
@@ -248,4 +254,39 @@ app.put('/settings/:id', (request, response) => {
 
 app.listen(PORT, function () {
     console.log(`Listening on ${PORT}`);
+});
+
+const clients = {};
+const watchDict = {
+    CARDS: Card,
+    USERS: User,
+    SETTINGS: Settings,
+};
+
+Object.entries(watchDict)
+    .forEach(([field, watchEntity]) => {
+        watchEntity
+            .watch()
+            .on('change', () => {
+                watchEntity.find((err, data) => {
+                    if (!err) {
+                        for (const key in clients) {
+                            clients[key].send(JSON.stringify({
+                                field,
+                                data
+                            }));
+                        }
+                    }
+                });
+            });
+    });
+
+wss.on('connection', function(ws) {
+    const id = `${Date.now()} ${Math.random()}`;
+
+    clients[id] = ws;
+
+    ws.on('close', function() {
+        delete clients[id];
+    });
 });
