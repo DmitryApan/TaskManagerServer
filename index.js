@@ -34,7 +34,10 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-const settingsSchema = new mongoose.Schema({ statuses: Array });
+const settingsSchema = new mongoose.Schema({
+    statuses: Array,
+    webSocket: Object,
+});
 
 const Settings = mongoose.model('Settings', settingsSchema);
 
