@@ -7,7 +7,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const WebSocket = require('ws');
 
-const PORT = process.env.PORT || 8888;
+const PORT = process.env.PORT || 5000
 
 const app = new express();
 
@@ -41,7 +41,12 @@ const settingsSchema = new mongoose.Schema({
 
 const Settings = mongoose.model('Settings', settingsSchema);
 
-app.use(cors());
+app.set('trust proxy', 1)
+
+app.use(cors({
+    credentials: true,
+	origin: 'https://task-manager-by-b.herokuapp.com'
+}));
 app.use(express.json());
 
 app.use(session({
