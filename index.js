@@ -50,8 +50,8 @@ app.use(session({
     saveUninitialized: false,
     resave: false,
     cookie: {
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
         httpOnly: true,
     }
 }));
@@ -107,7 +107,7 @@ mongoose.set('useFindAndModify', false);
 
 const connectionUri = 'mongodb+srv://admin:admin@cluster0-tjm8e.mongodb.net/test?retryWrites=true&w=majority';
 
-mongoose.connect(connectionUri, {useNewUrlParser: true});
+mongoose.connect(connectionUri, {useNewUrlParser: true, useUnifiedTopology: true});
 
 app.use(express.static(__dirname + '/build'));
 
