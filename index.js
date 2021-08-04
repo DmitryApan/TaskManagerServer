@@ -43,7 +43,7 @@ app.set('trust proxy', 1)
 
 app.use(cors({
     credentials: true,
-	origin: 'https://task-manager-by-b.herokuapp.com'
+	origin: 'http://task-manager-by-b.herokuapp.com'
 }));
 app.use(express.json());
 
