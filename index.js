@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 5000
 
 const app = new express();
 
-const wss = new WebSocket.Server({server: app});
+
 
 const cardSchema = new mongoose.Schema({
     description: String,
@@ -260,9 +260,11 @@ app.put('/settings/:id', (request, response) => {
     }
 });
 
-app.listen(PORT, function () {
+const server = app.listen(PORT, function () {
     console.log(`Listening on ${PORT}`);
 });
+
+const wss = new WebSocket.Server({server});
 
 const clients = {};
 const watchDict = {
