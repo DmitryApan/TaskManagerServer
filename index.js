@@ -11,9 +11,7 @@ const PORT = process.env.PORT || 5000
 
 const app = new express();
 
-const wss = new WebSocket.Server({
-    port: 8080,
-});
+const wss = new WebSocket.Server({app});
 
 const cardSchema = new mongoose.Schema({
     description: String,
