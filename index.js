@@ -8,6 +8,7 @@ const session = require('express-session');
 const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 5000
+const HOST = process.env.HOST
 
 const app = new express();
 
@@ -43,7 +44,7 @@ app.set('trust proxy', 1)
 
 app.use(cors({
     credentials: true,
-	origin: 'https://task-manager-by-b.herokuapp.com'
+	//origin: 'https://task-manager-by-b.herokuapp.com'
 }));
 app.use(express.json());
 
