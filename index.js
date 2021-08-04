@@ -283,6 +283,8 @@ Object.entries(watchDict)
                                 field,
                                 data
                             }));
+
+                            console.log("Send WS")
                         }
                     }
                 });
@@ -293,6 +295,8 @@ wss.on('connection', function(ws) {
     const id = `${Date.now()} ${Math.random()}`;
 
     clients[id] = ws;
+
+    console.log("Connect WS")
 
     ws.on('close', function() {
         delete clients[id];
