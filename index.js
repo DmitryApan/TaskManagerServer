@@ -12,8 +12,6 @@ const HOST = process.env.HOST
 
 const app = new express();
 
-
-
 const cardSchema = new mongoose.Schema({
     description: String,
     status: String,
@@ -44,7 +42,7 @@ app.set('trust proxy', 1)
 
 app.use(cors({
     credentials: true,
-	//origin: 'https://task-manager-by-b.herokuapp.com'
+	origin: 'https://task-manager-by-b.herokuapp.com'
 }));
 app.use(express.json());
 
