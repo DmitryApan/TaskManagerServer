@@ -5,6 +5,8 @@ const cors = require('cors');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const redisStorage = require('connect-redis')(session)
+const redis = require('redis')
 const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 5000
@@ -38,6 +40,15 @@ const settingsSchema = new mongoose.Schema({
 
 const Settings = mongoose.model('Settings', settingsSchema);
 
+const client = redis.createClient({
+	host: 'redis-12791.c92.us-east-1-3.ec2.cloud.redislabs.com',
+	port: 12791,
+	password: '2ggRuP6nhhC1hygn5EEa6hz0DtlIoiqR'
+})
+client.on('error', err => {
+    console.log('Error redis: ' + err);
+})
+
 app.set('trust proxy', 1)
 
 app.use(cors({
@@ -46,62 +57,75 @@ app.use(cors({
     origin: 'http://localhost:3000'
 }));
 app.use(express.json());
-
+app.use(express.urlencoded({extended: true}))
 app.use(session({
-    name: 'super-test',
-    secret: 'secret',
+    store: new redisStorage({client}),
+    secret: 'hgkhgsd5fs351fs53fd1s',
     saveUninitialized: false,
-    resave: false,
+    rolling: true,
+    resave: true,
     cookie: {
         secure: true,
         sameSite: 'none',
-        httpOnly: true,
     }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser((user, next) => {
-    next(null, user);
-});
-
-passport.deserializeUser((req, body, next) => {
-    User.findOne(body, (err, user) => {
-        next(null, user);
-    });
-});
-
 const local = new LocalStrategy(
     {
         usernameField: 'email',
         passwordField: 'password',
-        session: true,
-        passReqToCallback: true,
     },
-    function (req, email, password, done) {
+    function (email, password, done) {
         User.findOne({ email }, (err, user) => {
-            if (!user || user.password !== password) {
-                return done(null, false, {
-                    message: 'Wrong email or password'
-                });
+            if (err) { return done(err); }
+            if (!user || user.password !== password) {                
+                return done(null, false, { message: 'Wrong email or password' });
             } else {
                 return done(null, user);
             }
         });
     }
 );
-
 passport.use(local);
+passport.serializeUser((user, next) => {
+    next(null, user);
+    console.log('Serialize user: ' + user);
+});
+passport.deserializeUser((user, next) => {
+    next(null, user);
+    console.log('Deserialize user: ' + user);
+});
 
+app.post('/login', function (req, res) {
+    passport.authenticate('local', function (err, user, info) {
+		if (err) {
+			return res.send(err);
+		}
 
+		if (!user) {
+			return res.send(info.message)
+		}
 
-app.post('/login',
-    passport.authenticate('local'),
-    (req, res) => {
-        res.json(req.user);
-    }
-);
+		req.logIn(user, function (err) {
+			if (err) {
+				return res.send(err);
+			}
+			
+			//if (req.body.rememberMe) {
+				req.session.cookie.expires = true
+				req.session.cookie.maxAge = 180 * 24 * 60 * 60 * 1000
+				req.session.save()
+			//}
+
+            console.log('LogIn: ' + user);
+
+			return res.send(user)
+		})
+	})(req, res)
+});
 
 app.get('/logout', function(req, res){
     req.logout();
