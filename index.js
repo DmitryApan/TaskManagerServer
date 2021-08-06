@@ -114,11 +114,11 @@ app.post('/login', function (req, res) {
 				return res.send(err);
 			}
 			
-			//if (req.body.rememberMe) {
+			if (req.body.rememberMe) {
 				req.session.cookie.expires = true
 				req.session.cookie.maxAge = 180 * 24 * 60 * 60 * 1000
 				req.session.save()
-			//}
+			}
 
             console.log('LogIn: ' + user);
 
@@ -171,6 +171,9 @@ const authMiddleware = (req, res, next) => {
 };
 
 app.get('/cards', (request, response) => {
+    
+    console.log(request.user);
+
     Card.find((err, cards) => {
         if (err) {
             response.json(err);
