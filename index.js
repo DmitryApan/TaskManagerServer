@@ -112,7 +112,7 @@ app.get('/auth', function (req, res) {
     const {user} = req;
 
 	if (user) {
-		return res.send(wrapperData(user));
+		return res.send(wrapperData({id: user}));
 	} 
 		
 	res.send(wrapperData(null, 'You are not authorized'));	
@@ -139,7 +139,7 @@ app.post('/login', function (req, res) {
 				req.session.save()
 			}
 
-            return res.send(wrapperData(user))
+            return res.send(wrapperData({id: user}))
 		})
 	})(req, res)
 });
@@ -154,7 +154,7 @@ app.get('/logout', function(req, res){
 			expires: new Date(), 
 			sameSite: 'none',
 			secure: true,  
-		}).send(wrapperData(user));
+		}).send(wrapperData({id: user}));
 	});
 });
 
@@ -196,7 +196,7 @@ app.post('/register', (req, res) => {
 					req.session.save()
 				}
 
-				res.send(wrapperData(user._id));				
+				res.send(wrapperData({id: user._id}));				
 			});			
 		});
 	});
