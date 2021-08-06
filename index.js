@@ -14,6 +14,10 @@ const HOST = process.env.HOST
 
 const app = new express();
 
+const connectionUri = 'mongodb+srv://admin:admin@cluster0-tjm8e.mongodb.net/test?retryWrites=true&w=majority';
+mongoose.set('useFindAndModify', false);
+mongoose.connect(connectionUri, {useNewUrlParser: true, useUnifiedTopology: true});
+
 const cardSchema = new mongoose.Schema({
     description: String,
     status: String,
@@ -21,7 +25,6 @@ const cardSchema = new mongoose.Schema({
     owners: Array,
     children: Array,
 });
-
 const Card = mongoose.model('Card', cardSchema);
 
 const userSchema = new mongoose.Schema({
@@ -30,14 +33,12 @@ const userSchema = new mongoose.Schema({
     avatar: String,
     name: String,
 });
-
 const User = mongoose.model('User', userSchema);
 
 const settingsSchema = new mongoose.Schema({
     statuses: Array,
     webSocket: Object,
 });
-
 const Settings = mongoose.model('Settings', settingsSchema);
 
 const client = redis.createClient({
@@ -84,7 +85,7 @@ const local = new LocalStrategy(
             if (!user || user.password !== password) {                
                 return done(null, false, { message: 'Wrong email or password' });
             } else {
-                return done(null, user);
+                return done(null, user._id);
             }
         });
     }
@@ -99,19 +100,37 @@ passport.deserializeUser((user, next) => {
     console.log('Deserialize user: ' + user);
 });
 
+function wrapperData(data, error, code) {
+	return {
+		data: {...data},
+		resultCode: code || (error ? 1 : 0),
+		error: error ? (error.isArray ? [...error] : [error]) : []
+	}
+}
+
+app.get('/auth', function (req, res) {
+    const {user} = req;
+
+	if (user) {
+		return res.send(wrapperData(user));
+	} 
+		
+	res.send(wrapperData(null, 'You are not authorized'));	
+})
+
 app.post('/login', function (req, res) {
     passport.authenticate('local', function (err, user, info) {
 		if (err) {
-			return res.send(err);
+			return res.send(wrapperData(null, err));
 		}
 
 		if (!user) {
-			return res.send(info.message)
+			return res.send(wrapperData(null, info.message));
 		}
 
 		req.logIn(user, function (err) {
 			if (err) {
-				return res.send(err);
+				return res.send(wrapperData(null, err));
 			}
 			
 			if (req.body.rememberMe) {
@@ -120,60 +139,71 @@ app.post('/login', function (req, res) {
 				req.session.save()
 			}
 
-            console.log('LogIn: ' + user);
-
-			return res.send(user)
+            return res.send(wrapperData(user))
 		})
 	})(req, res)
 });
 
 app.get('/logout', function(req, res){
+    const {user} = req;
+    
     req.logout();
-    res.json({ok: true});
+
+    req.session.destroy(function () {
+		res.cookie("connect.sid", "", { 
+			expires: new Date(), 
+			sameSite: 'none',
+			secure: true,  
+		}).send(wrapperData(user));
+	});
 });
 
-mongoose.set('useFindAndModify', false);
+app.post('/register', (req, res) => {
+    const {user} = req
+	const {email, password, rememberMe} = req.body	
 
-const connectionUri = 'mongodb+srv://admin:admin@cluster0-tjm8e.mongodb.net/test?retryWrites=true&w=majority';
+	if (user) {
+		return res.send(wrapperData(null, 'You are authorized'))
+	}
 
-mongoose.connect(connectionUri, {useNewUrlParser: true, useUnifiedTopology: true});
+	if (!email || !password) {
+		return res.send(wrapperData(null, 'Not all data'))		
+	}
 
-app.use(express.static(__dirname + '/build'));
+	User.findOne({ email }, function (err, user) {
+		if (user) {
+			return res.send(wrapperData(null, 'User exists'))
+		}
 
-app.get('/', function(request, response){
-    response.sendFile(path.join(__dirname, 'build/index.html'));
+		if (err) {
+			return res.send(wrapperData(null, err))
+		}
+
+		const newUser = new User({email, password})
+		newUser.save(function (err, user) {
+			if (err) {
+				return res.send(wrapperData(null, err))
+			} 
+
+			req.logIn(user._id, function (err) {
+				if (err) {
+					return res.send(wrapperData(null, err))
+				} 
+				
+				if (rememberMe) {
+					req.session.cookie.expires = true
+					req.session.cookie.maxAge = 180 * 24 * 60 * 60 * 1000
+					req.session.save()
+				}
+
+				res.send(wrapperData(user._id));				
+			});			
+		});
+	});
 });
-
-app.post('/register', (request, response) => {
-    const { email, password } = request.body;
-
-    if (email && password) {
-        const user = new User({ email, password });
-
-        user.save((err, entity) => {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(entity);
-            }
-        });
-    } else {
-        response.json({err: 'you need to pass email and password'});
-    }
-});
-
-const authMiddleware = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-
-    res.json({redirectToLogin: true, ok: false});
-};
 
 app.get('/cards', (request, response) => {
     
-    console.log(request.user);
-
     Card.find((err, cards) => {
         if (err) {
             response.json(err);
