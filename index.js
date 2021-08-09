@@ -290,7 +290,7 @@ app.get('/users', (request, response) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
-                response.send(wrapperData(users._doc));
+                response.send(wrapperData(users));
             }
         });
     } else {
