@@ -310,7 +310,7 @@ app.put('/user', (request, response) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
-                response.send(wrapperData(entity._doc));
+                response.send(wrapperData(entity));
             }
         });
         
@@ -327,7 +327,7 @@ app.get('/settings', (request, response) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
-                response.send(wrapperData(settings[0]._doc));
+                response.send(wrapperData(settings[0]));
             }
         });
     } else {
@@ -345,7 +345,7 @@ app.put('/settings/:id', (request, response) => {
                 if (err) {
                     response.send(wrapperData(null, err));
                 } else {
-                    response.send(wrapperData(entity._doc));
+                    response.send(wrapperData(entity));
                 }
             });
         } else {
