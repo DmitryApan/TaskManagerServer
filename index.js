@@ -102,7 +102,7 @@ passport.deserializeUser((user, next) => {
 
 function wrapperData(data, error, code) {
 	return {
-		data: {...data},
+		data,
 		resultCode: code || (error ? 1 : 0),
 		error: error ? (error.isArray ? [...error] : [error]) : []
 	}
