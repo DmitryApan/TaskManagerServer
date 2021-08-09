@@ -250,7 +250,7 @@ app.put('/card/:id', (request, response) => {
                 if (err) {
                     response.send(wrapperData(null, err));
                 } else {
-                    response.send(wrapperData(entity._doc));
+                    response.send(wrapperData(entity));
                 }
             });
         } else {
@@ -271,7 +271,7 @@ app.delete('/card/:id', (request, response) => {
                 if (err) {
                     response.send(wrapperData(null, err));
                 } else {
-                    response.send(wrapperData(entity._doc));
+                    response.send(wrapperData(entity));
                 }
             });
         } else {
