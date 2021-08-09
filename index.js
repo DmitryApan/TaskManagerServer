@@ -210,7 +210,7 @@ app.get('/cards', (request, response) => {
         if (err) {
             response.send(wrapperData(null, err));
         } else {
-            response.send(wrapperData(cards));
+            response.send(wrapperData(cards._doc));
         }});        
     } else {
         response.send(wrapperData(null, 'You are not authorized'));
@@ -250,7 +250,7 @@ app.put('/card/:id', (request, response) => {
                 if (err) {
                     response.send(wrapperData(null, err));
                 } else {
-                    response.send(wrapperData(entity));
+                    response.send(wrapperData(entity._doc));
                 }
             });
         } else {
@@ -271,7 +271,7 @@ app.delete('/card/:id', (request, response) => {
                 if (err) {
                     response.send(wrapperData(null, err));
                 } else {
-                    response.send(wrapperData(entity));
+                    response.send(wrapperData(entity._doc));
                 }
             });
         } else {
@@ -290,7 +290,7 @@ app.get('/users', (request, response) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
-                response.send(wrapperData(users));
+                response.send(wrapperData(users._doc));
             }
         });
     } else {
@@ -306,7 +306,7 @@ app.put('/user', (request, response) => {
 
         if (!id) { id = user; }       
 
-        User.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
+        User.findOneAndUpdate({_id: id}, request.body, {new: true}, (err, entity) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
@@ -327,7 +327,7 @@ app.get('/settings', (request, response) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
-                response.send(wrapperData(settings[0]));
+                response.send(wrapperData(settings[0]._doc));
             }
         });
     } else {
@@ -345,7 +345,7 @@ app.put('/settings/:id', (request, response) => {
                 if (err) {
                     response.send(wrapperData(null, err));
                 } else {
-                    response.send(wrapperData(entity));
+                    response.send(wrapperData(entity._doc));
                 }
             });
         } else {
