@@ -306,9 +306,7 @@ app.put('/user', (request, response) => {
 
         if (!id) { id = user; }
         
-        const payload = { _id: id };
-
-        User.findOneAndUpdate(payload, request.body, {new: true}, (err, entity) => {
+        User.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
