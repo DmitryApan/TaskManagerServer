@@ -304,13 +304,13 @@ app.put('/user', (request, response) => {
 
     if (user) {
 
-        if (!id) { id = user; }
-        
+        if (!id) { id = user; }       
+
         User.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
             if (err) {
                 response.send(wrapperData(null, err));
             } else {
-                response.send(wrapperData(entity));
+                response.send(wrapperData(entity._doc));
             }
         });
         
