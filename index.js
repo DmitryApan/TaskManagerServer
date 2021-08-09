@@ -102,7 +102,7 @@ passport.deserializeUser((user, next) => {
 
 function wrapperData(data, error, code) {
 	return {
-		data: {...data},
+		data,
 		resultCode: code || (error ? 1 : 0),
 		error: error ? (error.isArray ? [...error] : [error]) : []
 	}
@@ -203,118 +203,157 @@ app.post('/register', (req, res) => {
 });
 
 app.get('/cards', (request, response) => {
-    
-    Card.find((err, cards) => {
+    const {user} = request;
+
+    if (user) {
+        Card.find((err, cards) => {
         if (err) {
-            response.json(err);
+            response.send(wrapperData(null, err));
         } else {
-            response.json(cards);
-        }
-    });
+            response.send(wrapperData(cards));
+        }});        
+    } else {
+        response.send(wrapperData(null, 'You are not authorized'));
+    }    
 });
 
 app.post('/card', (request, response) => {
     const { title, description, status } = request.body;
+    const {user} = request;
 
-    if (title) {
-        const card = new Card({ description, title, status: status || 'Open', owners: [] });
-
-        card.save((err, entity) => {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(entity);
-            }
-        });
+    if (user) {
+        if (title) {
+            const card = new Card({ description, title, status: status || 'Open', owners: [] });
+    
+            card.save((err, entity) => {
+                if (err) {
+                    response.send(wrapperData(null, err));
+                } else {
+                    response.send(wrapperData(entity));
+                }
+            });
+        } else {
+            response.send(wrapperData(null, 'where is title, dude?'));
+        }
     } else {
-        response.json({err: 'where is title, dude?'});
-    }
+        response.send(wrapperData(null, 'You are not authorized')); 
+    }    
 });
 
 app.put('/card/:id', (request, response) => {
     const { id } = request.params;
+    const {user} = request;
 
-    if (id) {
-        Card.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(entity);
-            }
-        });
+    if (user) {
+        if (id) {
+            Card.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
+                if (err) {
+                    response.send(wrapperData(null, err));
+                } else {
+                    response.send(wrapperData(entity));
+                }
+            });
+        } else {
+            response.send(wrapperData(null, 'where is id, dude?'));
+        }
     } else {
-        response.json({err: 'where is id, dude?'});
-    }
+        response.send(wrapperData(null, 'You are not authorized'));
+    }    
 });
 
 app.delete('/card/:id', (request, response) => {
     const { id } = request.params;
+    const {user} = request;
 
-    if (id) {
-        Card.findByIdAndRemove(id, (err, entity) => {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(entity);
-            }
-        });
+    if (user) {
+        if (id) {
+            Card.findByIdAndRemove(id, (err, entity) => {
+                if (err) {
+                    response.send(wrapperData(null, err));
+                } else {
+                    response.send(wrapperData(entity));
+                }
+            });
+        } else {
+            response.send(wrapperData(null, 'where is id, dude?'));
+        }
     } else {
-        response.json({err: 'where is id, dude?'});
-    }
+        response.send(wrapperData(null, 'You are not authorized'));
+    }   
 });
 
 app.get('/users', (request, response) => {
-    User.find((err, users) => {
-        if (err) {
-            response.json(err);
-        } else {
-            response.json(users);
-        }
-    });
-});
+    const {user} = request;
 
-app.put('/user', (request, response) => {
-    const { email } = request.body;
-
-    if (email) {
-        const payload = { email };
-
-        User.findOneAndUpdate(payload, request.body, {new: true}, (err, entity) => {
+    if (user) {
+        User.find((err, users) => {
             if (err) {
-                response.json(err);
+                response.send(wrapperData(null, err));
             } else {
-                response.json(entity);
+                response.send(wrapperData(users));
             }
         });
     } else {
-        response.json({err: 'where is email, dude?'});
+        response.send(wrapperData(null, 'You are not authorized'));
+    }
+});
+
+app.put('/user', (request, response) => {
+    let {id} = request.body;
+    const {user} = request;
+
+    if (user) {
+
+        if (!id) { id = user; }       
+
+        User.findOneAndUpdate({_id: id}, request.body, {new: true}, (err, entity) => {
+            if (err) {
+                response.send(wrapperData(null, err));
+            } else {
+                response.send(wrapperData(entity));
+            }
+        });
+        
+    } else {
+        response.send(wrapperData(null, 'You are not authorized'));
     }
 });
 
 app.get('/settings', (request, response) => {
-    Settings.find((err, settings) => {
-        if (err) {
-            response.json(err);
-        } else {
-            response.json(settings[0]);
-        }
-    });
+    const {user} = request;
+
+    if (user) {
+        Settings.find((err, settings) => {
+            if (err) {
+                response.send(wrapperData(null, err));
+            } else {
+                response.send(wrapperData(settings[0]));
+            }
+        });
+    } else {
+        response.send(wrapperData(null, 'You are not authorized'));
+    }
 });
 
 app.put('/settings/:id', (request, response) => {
     const { id } = request.params;
+    const {user} = request;
 
-    if (id) {
-        Settings.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(entity);
-            }
-        });
+    if (user) {
+        if (id) {
+            Settings.findByIdAndUpdate(id, request.body, {new: true}, (err, entity) => {
+                if (err) {
+                    response.send(wrapperData(null, err));
+                } else {
+                    response.send(wrapperData(entity));
+                }
+            });
+        } else {
+            response.send(wrapperData(null, 'where is id, dude?'));
+        }
     } else {
-        response.json({err: 'where is id, dude?'});
-    }
+        response.send(wrapperData(null, 'You are not authorized'));
+    }    
 });
 
 const server = app.listen(PORT, function () {
