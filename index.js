@@ -210,7 +210,7 @@ app.get('/cards', (request, response) => {
         if (err) {
             response.send(wrapperData(null, err));
         } else {
-            response.send(wrapperData(cards._doc));
+            response.send(wrapperData(cards));
         }});        
     } else {
         response.send(wrapperData(null, 'You are not authorized'));
