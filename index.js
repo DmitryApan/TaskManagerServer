@@ -299,23 +299,23 @@ app.get('/users', (request, response) => {
 });
 
 app.put('/user', (request, response) => {
-    const { email } = request.body;
+    let {id} = request.body;
     const {user} = request;
 
     if (user) {
-        if (email) {
-            const payload = { email };
-    
-            User.findOneAndUpdate(payload, request.body, {new: true}, (err, entity) => {
-                if (err) {
-                    response.send(wrapperData(null, err));
-                } else {
-                    response.send(wrapperData(entity));
-                }
-            });
-        } else {
-            response.send(wrapperData(null, 'where is email, dude?'));
-        }
+
+        if (!id) { id = user; }
+        
+        const payload = { _id: id };
+
+        User.findOneAndUpdate(payload, request.body, {new: true}, (err, entity) => {
+            if (err) {
+                response.send(wrapperData(null, err));
+            } else {
+                response.send(wrapperData(entity));
+            }
+        });
+        
     } else {
         response.send(wrapperData(null, 'You are not authorized'));
     }
