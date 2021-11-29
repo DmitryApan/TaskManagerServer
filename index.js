@@ -18,12 +18,22 @@ const connectionUri = 'mongodb+srv://admin:admin@cluster0-tjm8e.mongodb.net/test
 mongoose.set('useFindAndModify', false);
 mongoose.connect(connectionUri, {useNewUrlParser: true, useUnifiedTopology: true});
 
+const projectSchema = new mongoose.Schema({
+    title: String,              // Название проекта
+    description: String,        // описание проекта
+    users: Array,               // id пользователей проекта
+    owners: Array               // id владельцев проекта
+});
+const Project = mongoose.model('Project', projectSchema);
+
 const cardSchema = new mongoose.Schema({
     description: String,
     status: String,
     title: String,
     owners: Array,
-    children: Array,
+    children: Array,    
+    
+    ownersStatuses: Array,      // Статусы выполенения владельцев
 });
 const Card = mongoose.model('Card', cardSchema);
 
@@ -32,19 +42,24 @@ const userSchema = new mongoose.Schema({
     password: String,
     avatar: String,
     name: String,
+
+    projects: Array,            // id проектов  
 });
 const User = mongoose.model('User', userSchema);
 
 const settingsSchema = new mongoose.Schema({
     statuses: Array,
     webSocket: Object,
+
+    owner: String,              // id владельца настроек
+    project: String             // id проекта настроек
 });
 const Settings = mongoose.model('Settings', settingsSchema);
 
 const client = redis.createClient({
-	host: 'redis-12791.c92.us-east-1-3.ec2.cloud.redislabs.com',
-	port: 12791,
-	password: '2ggRuP6nhhC1hygn5EEa6hz0DtlIoiqR'
+	host: 'redis-10439.c90.us-east-1-3.ec2.cloud.redislabs.com',
+	port: 10439,
+	password: 'ch9BfQNzpQsgIrDmxFHNdRQ67f04ebtO'
 })
 client.on('error', err => {
     console.log('Error redis: ' + err);
